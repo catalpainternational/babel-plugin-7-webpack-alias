@@ -86,43 +86,43 @@ export default declare(api => {
                 }, {});
             } else if (webpackConfig.resolve && webpackConfig.resolve.alias) {
                 aliasConfig = webpackConfig.resolve.alias;
-            // } else if (typeof webpackConfig === 'function') {
-            //     const regex = /.*alias:\s*\{(?<alias>(.|\s)*?)\}/gm;
-            //     const wcValue = webpackConfig.toString();
+            } else if (typeof webpackConfig === 'function') {
+                const regex = /.*alias:\s*\{(?<alias>(.|\s)*?)\}/gm;
+                const wcValue = webpackConfig.toString();
 
-            //     let m;
+                let m;
 
-            //     while ((m = regex.exec(wcValue)) !== null) {
-            //         // This is necessary to avoid infinite loops with zero-width matches
-            //         if (m.index === regex.lastIndex) {
-            //             regex.lastIndex++;
-            //         }
+                while ((m = regex.exec(wcValue)) !== null) {
+                    // This is necessary to avoid infinite loops with zero-width matches
+                    if (m.index === regex.lastIndex) {
+                        regex.lastIndex++;
+                    }
                     
-            //         if (m.groups && m.groups.alias) {
-            //             const aliases = m.groups.alias.split('\n');
-            //             aliases.forEach((aliasKeyValue) => {
-            //                 if (aliasKeyValue.trim().length === 0) {
-            //                     return;
-            //                 }
-            //                 const alias = aliasKeyValue.split(':');
-            //                 const aliasKey = alias[0].trim();
-            //                 let aliasPath = alias.slice(1).join(':').trim();
-            //                 if (aliasPath.startsWith('path.resolve') || aliasPath.startsWith('path.join')) {
-            //                     const paths = aliasPath
-            //                         .replace('path.resolve(', '')
-            //                         .replace('path.join(', '')
-            //                         .replace(')', '')
-            //                         .split(',')
-            //                         .filter((p) => {return p.trim();})
-            //                         .map((p) => {
-            //                             return (p !== '__dirname') ? p.trim().replace(/[\"\']/g, '') : process.cwd();
-            //                         });
-            //                     aliasPath = resolve(...paths);
-            //                 }
-            //                 aliasConfig[aliasKey] = aliasPath;
-            //             });
-            //         }
-            //     }
+                    if (m.groups && m.groups.alias) {
+                        const aliases = m.groups.alias.split('\n');
+                        aliases.forEach((aliasKeyValue) => {
+                            if (aliasKeyValue.trim().length === 0) {
+                                return;
+                            }
+                            const alias = aliasKeyValue.split(':');
+                            const aliasKey = alias[0].trim();
+                            let aliasPath = alias.slice(1).join(':').trim();
+                            if (aliasPath.startsWith('path.resolve') || aliasPath.startsWith('path.join')) {
+                                const paths = aliasPath
+                                    .replace('path.resolve(', '')
+                                    .replace('path.join(', '')
+                                    .replace(')', '')
+                                    .split(',')
+                                    .filter((p) => {return p.trim();})
+                                    .map((p) => {
+                                        return (p !== '__dirname') ? p.trim().replace(/[\"\']/g, '') : process.cwd();
+                                    });
+                                aliasPath = resolve(...paths);
+                            }
+                            aliasConfig[aliasKey] = aliasPath;
+                        });
+                    }
+                }
             }
 
             // Exit if there's no alias config
