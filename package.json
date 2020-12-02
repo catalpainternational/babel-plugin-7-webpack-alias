@@ -1,31 +1,33 @@
 {
-    "name": "babel-plugin-7-webpack-alias",
-    "version": "0.1.2",
-    "description": "Babel 7 plugin for working with webpack aliases",
-    "main": "lib/index.js",
-    "scripts": {
-      "test": "jest"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/catalpainternational/babel-plugin-7-webpack-alias.git"
-    },
-    "keywords": [
-      "babel",
-      "webpack",
-      "alias",
-      "yarn",
-      "berry",
-      "ava"
-    ],
-    "author": "Nathan Friemel",
-    "contributors": [
-      "Lee Humphries <lee@catalpa.io>"
-    ],
-    "license": "MIT",
-    "bugs": {
-      "url": "https://github.com/catalpainternational/babel-plugin-7-webpack-alias/issues"
-    },
-    "homepage": "https://github.com/catalpainternational/babel-plugin-7-webpack-alias#readme"
+  "name": "babel-plugin-7-webpack-alias",
+  "version": "0.1.2",
+  "description": "Babel 7 plugin for working with webpack aliases",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"No test specified\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catalpainternational/babel-plugin-7-webpack-alias.git"
+  },
+  "keywords": [
+    "babel",
+    "webpack",
+    "alias",
+    "yarn",
+    "berry",
+    "ava"
+  ],
+  "author": "Nathan Friemel",
+  "contributors": [
+    "Lee Humphries <lee@catalpa.io>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/catalpainternational/babel-plugin-7-webpack-alias/issues"
+  },
+  "homepage": "https://github.com/catalpainternational/babel-plugin-7-webpack-alias#readme",
+  "dependencies": {
+    "jest": "^26.6.3"
   }
-  
+}
