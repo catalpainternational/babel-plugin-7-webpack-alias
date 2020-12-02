@@ -76,53 +76,75 @@ export default declare(api => {
             // Require the config
             webpackConfig = require(configPath);
 
-            if (Array.isArray(webpackConfig)) { // Uses webpack's multi-compiler option
-                aliasConfig = webpackConfig.reduce((previous, current) => {
-                    const next = Object.assign({}, previous);
-                    if (current.resolve && current.resolve.alias) {
-                        Object.assign(next, current.resolve.alias);
-                    }
-                    return next;
-                }, {});
+            let configType = "unknown";
+            if (Array.isArray(webpackConfig)) {
+                configType = "multi-compiler";
             } else if (webpackConfig.resolve && webpackConfig.resolve.alias) {
-                aliasConfig = webpackConfig.resolve.alias;
+                configType = "normal";
             } else if (typeof webpackConfig === 'function') {
-                const regex = /.*alias:\s*\{(?<alias>(.|\s)*?)\}/gm;
-                const wcValue = webpackConfig.toString();
+                configType = "function";
+            }
 
-                let m;
-
-                while ((m = regex.exec(wcValue)) !== null) {
-                    // This is necessary to avoid infinite loops with zero-width matches
-                    if (m.index === regex.lastIndex) {
-                        regex.lastIndex++;
-                    }
-                    
-                    if (m.groups && m.groups.alias) {
-                        const aliases = m.groups.alias.split('\n');
-                        aliases.forEach((aliasKeyValue) => {
-                            if (aliasKeyValue.trim().length === 0) {
-                                return;
-                            }
-                            const alias = aliasKeyValue.split(':');
-                            const aliasKey = alias[0].trim();
-                            let aliasPath = alias.slice(1).join(':').trim();
-                            if (aliasPath.startsWith('path.resolve') || aliasPath.startsWith('path.join')) {
-                                const paths = aliasPath
-                                    .replace('path.resolve(', '')
-                                    .replace('path.join(', '')
-                                    .replace(')', '')
-                                    .split(',')
-                                    .filter((p) => {return p.trim();})
-                                    .map((p) => {
-                                        return (p !== '__dirname') ? p.trim().replace(/[\"\']/g, '') : process.cwd();
-                                    });
-                                aliasPath = resolve(...paths);
-                            }
-                            aliasConfig[aliasKey] = aliasPath;
-                        });
-                    }
-                }
+            switch (configType) {
+                case "normal":
+                    aliasConfig = webpackConfig.resolve.alias;
+                    break;
+                case "multi-compiler":
+                    aliasConfig = webpackConfig.reduce((previous, current) => {
+                        const next = Object.assign({}, previous);
+                        if (current.resolve && current.resolve.alias) {
+                            Object.assign(next, current.resolve.alias);
+                        }
+                        return next;
+                    }, {});                    
+                    break;
+                case "function":
+                    const regex = /.*alias:\s*\{(?<alias>(.|\s)*?)\}/gm;
+                    const wcValue = webpackConfig.toString();
+    
+                    console.log(wcValue);
+    
+                    let m;
+    
+                    while ((m = regex.exec(wcValue)) !== null) {
+                        // This is necessary to avoid infinite loops with zero-width matches
+                        if (m.index === regex.lastIndex) {
+                            regex.lastIndex++;
+                        }
+    
+                        console.log(m.groups.alias);
+    
+                        if (m.groups && m.groups.alias) {
+                            const aliases = m.groups.alias.split(/[\r\n]/);
+                            aliases.forEach((aliasKeyValue) => {
+                                const akv = aliasKeyValue.trim();
+                                if (akv.length === 0) {
+                                    return;
+                                }
+                                console.log(akv);
+                                const alias = akv.split(':');
+                                const aliasKey = alias[0].trim();
+                                let aliasPath = alias.slice(1).join(':').trim();
+                                if (aliasPath.startsWith('path.resolve') || aliasPath.startsWith('path.join')) {
+                                    const paths = aliasPath
+                                        .replace('path.resolve(', '')
+                                        .replace('path.join(', '')
+                                        .replace(')', '')
+                                        .split(',')
+                                        .filter((p) => {return p.trim();})
+                                        .map((p) => {
+                                            return (p !== '__dirname') ? p.trim().replace(/[\"\']/g, '') : process.cwd();
+                                        });
+                                    console.log(paths);
+                                    aliasPath = resolve(...paths);
+                                }
+                                aliasConfig[aliasKey] = aliasPath;
+                            });
+                        }
+                    }    
+                    break;
+                default:
+                    throw new Error(`The webpack config file at — ${configPath} — is not in a form understood by babel-plugin-7-webpack-alias`);
             }
 
             // Exit if there's no alias config
