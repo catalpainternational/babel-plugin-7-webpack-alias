@@ -4,7 +4,7 @@
   "description": "Babel 7 plugin for working with webpack aliases",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"No test specified\""
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,38 @@
   },
   "homepage": "https://github.com/catalpainternational/babel-plugin-7-webpack-alias#readme",
   "dependencies": {
-    "jest": "^26.6.3"
+    "@babel/helper-plugin-utils": "^7.0.0"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.0.0-0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.8",
+    "@babel/core": "^7.12.9",
+    "@babel/plugin-proposal-export-default-from": "^7.12.1",
+    "@babel/plugin-proposal-export-namespace-from": "^7.12.1",
+    "@babel/plugin-proposal-object-rest-spread": "^7.12.1",
+    "@babel/plugin-transform-destructuring": "^7.12.1",
+    "@babel/plugin-transform-modules-commonjs": "^7.12.1",
+    "@babel/plugin-transform-parameters": "^7.12.1",
+    "@babel/plugin-transform-spread": "^7.12.1",
+    "@babel/plugin-transform-strict-mode": "^7.12.1",
+    "@babel/register": "^7.12.1",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^26.6.3",
+    "coveralls": "^3.1.0",
+    "eslint": "^7.14.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
+    "jest": "^26.6.3",
+    "webpack-merge": "^5.4.0"
+  },
+  "jest": {
+    "testURL": "http://localhost",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/src/__tests__/__configs__/"
+    ]
   }
 }
