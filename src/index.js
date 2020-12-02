@@ -76,20 +76,22 @@ export default declare(api => {
             // Require the config
             webpackConfig = require(configPath);
 
-            let configType = "unknown";
+            let configType = 'unknown';
             if (Array.isArray(webpackConfig)) {
-                configType = "multi-compiler";
-            } else if (webpackConfig.resolve && webpackConfig.resolve.alias) {
-                configType = "normal";
+                configType = 'multi-compiler';
             } else if (typeof webpackConfig === 'function') {
-                configType = "function";
+                configType = 'function';
+            } else if (webpackConfig) {
+                configType = 'normal';
             }
 
             switch (configType) {
-                case "normal":
-                    aliasConfig = webpackConfig.resolve.alias;
+                case 'normal':
+                    if (webpackConfig.resolve && webpackConfig.resolve.alias) {
+                        aliasConfig = webpackConfig.resolve.alias;
+                    }
                     break;
-                case "multi-compiler":
+                case 'multi-compiler':
                     aliasConfig = webpackConfig.reduce((previous, current) => {
                         const next = Object.assign({}, previous);
                         if (current.resolve && current.resolve.alias) {
@@ -98,7 +100,7 @@ export default declare(api => {
                         return next;
                     }, {});                    
                     break;
-                case "function":
+                case 'function':
                     const regex = /.*alias:\s*\{(?<alias>(.|\s)*?)\}/gm;
                     const wcValue = webpackConfig.toString();
     
@@ -144,6 +146,7 @@ export default declare(api => {
                     }    
                     break;
                 default:
+                    // This should only throw in very unusual circumstances as most webpack configs will be processed as simple objects
                     throw new Error(`The webpack config file at — ${configPath} — is not in a form understood by babel-plugin-7-webpack-alias`);
             }
 
