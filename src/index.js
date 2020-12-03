@@ -11,6 +11,7 @@ import fs from 'fs';
 
 const PLUGIN_KEY = 'webpack alias';
 const REQUIRE = 'require';
+const IMPORT = 'import';
 const DEFAULT_CONFIG_NAMES = ['webpack.config.js', 'webpack.config.babel.js'];
 
 let configPath;
@@ -84,6 +85,7 @@ export default declare(api => {
             } else if (webpackConfig) {
                 configType = 'normal';
             }
+            console.info(`Webpack config type: ${configType}`);
 
             switch (configType) {
                 case 'normal':
@@ -104,17 +106,12 @@ export default declare(api => {
                     const regex = /.*alias:\s*\{(?<alias>(.|\s)*?)\}/gm;
                     const wcValue = webpackConfig.toString();
     
-                    console.log(wcValue);
-    
                     let m;
-    
                     while ((m = regex.exec(wcValue)) !== null) {
                         // This is necessary to avoid infinite loops with zero-width matches
                         if (m.index === regex.lastIndex) {
                             regex.lastIndex++;
                         }
-    
-                        console.log(m.groups.alias);
     
                         if (m.groups && m.groups.alias) {
                             const aliases = m.groups.alias.split(/[\r\n]/);
@@ -123,7 +120,6 @@ export default declare(api => {
                                 if (akv.length === 0) {
                                     return;
                                 }
-                                console.log(akv);
                                 const alias = akv.split(':');
                                 const aliasKey = alias[0].trim();
                                 let aliasPath = alias.slice(1).join(':').trim();
@@ -137,27 +133,91 @@ export default declare(api => {
                                         .map((p) => {
                                             return (p !== '__dirname') ? p.trim().replace(/[\"\']/g, '') : process.cwd();
                                         });
-                                    console.log(paths);
                                     aliasPath = resolve(...paths);
                                 }
                                 aliasConfig[aliasKey] = aliasPath;
                             });
                         }
-                    }    
+                    }
+                    console.info(`-3: ${JSON.stringify(aliasConfig)}`);
                     break;
                 default:
                     // This should only throw in very unusual circumstances as most webpack configs will be processed as simple objects
                     throw new Error(`The webpack config file at — ${configPath} — is not in a form understood by babel-plugin-7-webpack-alias`);
             }
 
+            console.info(`-2: ${JSON.stringify(aliasConfig)}`);
             // Exit if there's no alias config
             if (Object.keys(aliasConfig).length === 0) {
                 throw new Error(`The webpack config file at — ${configPath} — does not contain an alias configuration`);
             }
 
             aliases = Object.keys(aliasConfig);
+            console.info(`-1: ${aliases}`);
         },
         visitor: {
+            ImportDeclaration(path, state) {
+                const { source: nodeSource } = path.node;
+                const { filename = '' } = state;
+
+                // Prevent @babel/register from running babel to run on the webpack config
+                if (filename === resolve(configPath)) {
+                    return;
+                }
+                
+                // Make sure required value is a string
+                if (!nodeSource || !t.isStringLiteral(nodeSource)) {
+                    return;
+                }
+
+                // Get the path of the StringLiteral
+                const { value: filePath } = nodeSource;
+
+                for (const alias of aliases) {
+                    let aliasDestination = aliasConfig[alias];
+                    const regex = new RegExp(`^${alias}(\/|$)`);
+
+                    if (regex.test(filePath)) {
+                        // notModuleRegExp from https://github.com/webpack/enhanced-resolve/blob/master/lib/Resolver.js
+                        const notModuleRegExp = /^\.$|^\.[\\\/]|^\.\.$|^\.\.[\/\\]|^\/|^[A-Z]:[\\\/]/i;
+                        const isModule = !notModuleRegExp.test(aliasDestination);
+
+                        if (isModule) {
+                            path.node.arguments = [t.StringLiteral(aliasDestination)];
+                            return;
+                        }
+
+                        // If the filepath is not absolute, make it absolute
+                        if (!isAbsolute(aliasDestination)) {
+                            aliasDestination = join(process.cwd(), aliasDestination);
+                        }
+                        let relativeFilePath = relative(dirname(filename), aliasDestination);
+
+                        // In case the file path is the root of the alias, need to put a dot to avoid having an absolute path
+                        if (relativeFilePath.length === 0) {
+                            relativeFilePath = '.';
+                        }
+
+                        let requiredFilePath = filePath.replace(alias, relativeFilePath);
+
+                        // If the file is requiring the current directory which is the alias, add an extra slash
+                        if (requiredFilePath === '.') {
+                            requiredFilePath = './';
+                        }
+
+                        // In the case of a file requiring a child directory of the current directory, we need to add a dot slash
+                        if (['.', '/'].indexOf(requiredFilePath[0]) === -1) {
+                            requiredFilePath = `./${requiredFilePath}`;
+                        }
+
+                        // TODO: should honor enforceExtension and then use extensionConf to make sure extension
+
+                        path.node.arguments = [t.StringLiteral(requiredFilePath)];
+                        return;
+                    }
+                }
+
+            },            
             CallExpression(path, state) {
                 const { arguments: nodeArguments } = path.node;
                 const { filename = '' } = state;

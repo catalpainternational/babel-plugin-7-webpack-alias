@@ -52,6 +52,22 @@ it('Should handle webpack config using multi-compiler', () => {
     expect(code).toMatchSnapshot();
 });
 
+it('Should handle webpack config using function and imports', () => {
+    const func = `
+        import { one } from 'js/index';
+        import { two } from 'Actions/index';
+    `;
+    const { code } = babel.transform(
+        func,
+        {
+            plugins: [
+                [aliasPlugin, { config: 'src/__tests__/__configs__/function.js' }]
+            ]
+        }
+    );
+    expect(code).toMatchSnapshot();
+});
+
 it('Should throw an error if webpack config does not contain a resolve object', () => {
     try {
         babel.transform(
