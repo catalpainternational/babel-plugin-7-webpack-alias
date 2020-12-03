@@ -11,7 +11,6 @@ import fs from 'fs';
 
 const PLUGIN_KEY = 'webpack alias';
 const REQUIRE = 'require';
-const IMPORT = 'import';
 const DEFAULT_CONFIG_NAMES = ['webpack.config.js', 'webpack.config.babel.js'];
 
 let configPath;
@@ -85,7 +84,7 @@ export default declare(api => {
             } else if (webpackConfig) {
                 configType = 'normal';
             }
-            console.info(`Webpack config type: ${configType}`);
+            // console.info(`Webpack config type: ${configType}`);
 
             switch (configType) {
                 case 'normal':
@@ -139,21 +138,18 @@ export default declare(api => {
                             });
                         }
                     }
-                    console.info(`-3: ${JSON.stringify(aliasConfig)}`);
                     break;
                 default:
                     // This should only throw in very unusual circumstances as most webpack configs will be processed as simple objects
                     throw new Error(`The webpack config file at — ${configPath} — is not in a form understood by babel-plugin-7-webpack-alias`);
             }
 
-            console.info(`-2: ${JSON.stringify(aliasConfig)}`);
             // Exit if there's no alias config
             if (Object.keys(aliasConfig).length === 0) {
                 throw new Error(`The webpack config file at — ${configPath} — does not contain an alias configuration`);
             }
 
             aliases = Object.keys(aliasConfig);
-            console.info(`-1: ${aliases}`);
         },
         visitor: {
             ImportDeclaration(path, state) {
@@ -164,7 +160,7 @@ export default declare(api => {
                 if (filename === resolve(configPath)) {
                     return;
                 }
-                
+
                 // Make sure required value is a string
                 if (!nodeSource || !t.isStringLiteral(nodeSource)) {
                     return;
@@ -183,15 +179,15 @@ export default declare(api => {
                         const isModule = !notModuleRegExp.test(aliasDestination);
 
                         if (isModule) {
-                            path.node.arguments = [t.StringLiteral(aliasDestination)];
+                            path.node.source = t.StringLiteral(aliasDestination);
                             return;
                         }
 
                         // If the filepath is not absolute, make it absolute
                         if (!isAbsolute(aliasDestination)) {
-                            aliasDestination = join(process.cwd(), aliasDestination);
+                            aliasDestination = join(process.cwd(), aliasDestination).replace(/\\/g, '/');
                         }
-                        let relativeFilePath = relative(dirname(filename), aliasDestination);
+                        let relativeFilePath = relative(dirname(filename), aliasDestination).replace(/\\/g, '/');
 
                         // In case the file path is the root of the alias, need to put a dot to avoid having an absolute path
                         if (relativeFilePath.length === 0) {
@@ -212,7 +208,7 @@ export default declare(api => {
 
                         // TODO: should honor enforceExtension and then use extensionConf to make sure extension
 
-                        path.node.arguments = [t.StringLiteral(requiredFilePath)];
+                        path.node.source = t.StringLiteral(requiredFilePath);
                         return;
                     }
                 }
@@ -256,9 +252,9 @@ export default declare(api => {
 
                         // If the filepath is not absolute, make it absolute
                         if (!isAbsolute(aliasDestination)) {
-                            aliasDestination = join(process.cwd(), aliasDestination);
+                            aliasDestination = join(process.cwd(), aliasDestination).replace(/\\/g, '/');
                         }
-                        let relativeFilePath = relative(dirname(filename), aliasDestination);
+                        let relativeFilePath = relative(dirname(filename), aliasDestination).replace(/\\/g, '/');
 
                         // In case the file path is the root of the alias, need to put a dot to avoid having an absolute path
                         if (relativeFilePath.length === 0) {

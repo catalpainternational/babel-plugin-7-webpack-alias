@@ -4,7 +4,11 @@
 
 # babel-plugin-7-webpack-alias
 Babel 7 plugin for working with webpack aliases.
+
 The objective of this plugin is to provide support for `yarn 2` (AKA berry), `ava`, and `webpack` configs that are defined as object returning functions.
+
+As well as support for `import`ing your dependencies.
+
 Hopefully it will still work with `npm`, your preferred testing framework (it uses `jest` itself), and more 'usual' `webpack` configs.
 
 The following is from [babel-plugin-webpack-alias-7](https://github.com/shortminds/babel-plugin-webpack-alias-7)

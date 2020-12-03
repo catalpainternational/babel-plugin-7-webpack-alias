@@ -9,7 +9,7 @@ const simpleTransform = `
 // Config options and error tests
 
 it('Should fallback to default configs if custom config not found', () => {
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         simpleTransform,
         {
             plugins: [
@@ -17,6 +17,7 @@ it('Should fallback to default configs if custom config not found', () => {
             ]
         }
     );
+
     expect(code).toMatchSnapshot();
 });
 
@@ -25,7 +26,7 @@ it('Should transform when webpack config has a dependency', () => {
         const one = require('libs/index.js');
         const two = require('moreLibs/index.js');
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         configWithDependency,
         {
             plugins: [
@@ -41,7 +42,7 @@ it('Should handle webpack config using multi-compiler', () => {
         const one = require('mobileLibs/index.js');
         const two = require('desktopLibs/index.js');
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         multiCompiler,
         {
             plugins: [
@@ -55,13 +56,13 @@ it('Should handle webpack config using multi-compiler', () => {
 it('Should handle webpack config using function and imports', () => {
     const func = `
         import { one } from 'js/index';
-        import { two } from 'Actions/index';
+        import { two } from "Actions/index";
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         func,
         {
             plugins: [
-                [aliasPlugin, { config: 'src/__tests__/__configs__/function.js' }]
+                [aliasPlugin, { config: 'src/__tests__/__configs__/doesNotExist.js' }]
             ]
         }
     );
@@ -70,7 +71,7 @@ it('Should handle webpack config using function and imports', () => {
 
 it('Should throw an error if webpack config does not contain a resolve object', () => {
     try {
-        babel.transform(
+        babel.transformSync(
             simpleTransform,
             {
                 plugins: [
@@ -86,7 +87,7 @@ it('Should throw an error if webpack config does not contain a resolve object', 
 
 it('Should throw an error if webpack config does not contain an alias object', () => {
     try {
-        babel.transform(
+        babel.transformSync(
             simpleTransform,
             {
                 plugins: [
@@ -108,7 +109,7 @@ it('Should not transform non require statements', () => {
         function callMe(a) {}
         callMe(a);
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         noRequireHere,
         {
             plugins: [aliasPlugin]
@@ -122,7 +123,7 @@ it('Should not transform if not requiring a string literal', () => {
         const number = 1;
         const something = require(number);
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         noStringLiteral,
         {
             plugins: [aliasPlugin]
@@ -135,7 +136,7 @@ it('Should return string literal destination when alias is a module', () => {
     const module = `
         const something = require('libs/module');
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         module,
         {
             plugins: [
@@ -150,7 +151,7 @@ it('Should make non absolute aliases absolute', () => {
     const notAbsolute = `
         const something = require('libs/nonAbsolute');
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         notAbsolute,
         {
             plugins: [
@@ -165,7 +166,7 @@ it('Should convert root aliases (relative to the config) properly', () => {
     const root = `
         const something = require('libs');
     `;
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         root,
         {
             plugins: [
@@ -179,7 +180,7 @@ it('Should convert root aliases (relative to the config) properly', () => {
 // Visitor tests
 
 it('Should perform a simple transform', () => {
-    const { code } = babel.transform(
+    const { code } = babel.transformSync(
         simpleTransform,
         {
             plugins: [
