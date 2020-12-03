@@ -11,6 +11,26 @@ As well as support for `import`ing your dependencies.
 
 Hopefully it will still work with `npm`, your preferred testing framework (it uses `jest` itself), and more 'usual' `webpack` configs.
 
+## Some Hints for Working With Yarn 2 (berry)
+
+If your `build` works OK, but your `test` runs are reporting errors like:
+
+`Error: Your application tried to access <Some resolve alias you used>, but it isn't declared in your dependencies; this makes the require call ambiguous and unsound.`
+
+Then the fault is `yarn`'s 
+
+So how can you fix it?  You need to replicate your `webpack` resolve alias settings in your `package.json` `dependencies` as `link`s.
+
+Here's an example:
+
+- If your `webpack.config` includes an alias like this: `Actions: path.resolve(__dirname, "src/js/actions")`
+
+- Then add the following as a `dependency` in your `package.json`: `"Actions": "link:src/js/actions"`
+
+- Then rerun plain `yarn` to get it to rework all of its stuff, otherwise it won't pick up on the above change.
+
+Note in the above `link` statement that there is no space before or after the colon, i.e. this works `link:src/js/actions`, but this doesn't `link: src/js/actions`.
+
 The following is from [babel-plugin-webpack-alias-7](https://github.com/shortminds/babel-plugin-webpack-alias-7)
 ------
 
