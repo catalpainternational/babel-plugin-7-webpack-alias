@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-7-webpack-alias",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Babel 7 plugin for working with webpack aliases",
   "main": "lib/index.js",
   "scripts": {
